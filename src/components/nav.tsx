@@ -14,6 +14,7 @@ const links = [
   { href: '/legislative-tracker', label: 'Tracker' },
   { href: '/resources', label: 'Resources' },
   { href: '/news', label: 'News' },
+  { href: '/donate', label: 'Donate' },
 ];
 
 export function Nav() {

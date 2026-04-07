@@ -30,6 +30,7 @@ export function Footer() {
               <li><Link href="/certification" className="transition hover:text-[#0f2b5b]">Get Certified</Link></li>
               <li><Link href="/resources" className="transition hover:text-[#0f2b5b]">Resources</Link></li>
               <li><Link href="/news" className="transition hover:text-[#0f2b5b]">News</Link></li>
+              <li><Link href="/donate" className="transition hover:text-[#b8860b] font-medium text-[#b8860b]">Donate</Link></li>
             </ul>
           </div>
 
