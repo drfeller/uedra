@@ -6,7 +6,7 @@ export function Footer() {
     <footer className="border-t border-gray-200 bg-gray-50 py-16">
       <div className="mx-auto max-w-6xl px-6">
         <div className="grid gap-10 md:grid-cols-4">
-          <div className="md:col-span-2">
+          <div className="md:col-span-1">
             <div className="flex items-center gap-3">
               <Shield className="h-6 w-6 text-[#0f2b5b]" />
               <span className="text-sm font-bold text-[#0f2b5b]">
@@ -16,8 +16,20 @@ export function Footer() {
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-gray-500">
               Advocating for uniform legislation and open technical standards to
               protect families through secure, interoperable estate document
-              registries. Free and fair standards for all.
+              registries.
             </p>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+              Registry
+            </h4>
+            <ul className="mt-3 space-y-2 text-sm text-gray-600">
+              <li><Link href="/register" className="font-medium text-[#b8860b] transition hover:text-[#d4991a]">Register (Free)</Link></li>
+              <li><Link href="/verify" className="transition hover:text-[#0f2b5b]">Verify Documents</Link></li>
+              <li><Link href="/for-institutions" className="transition hover:text-[#0f2b5b]">For Institutions</Link></li>
+              <li><Link href="/for-families" className="transition hover:text-[#0f2b5b]">For Families</Link></li>
+            </ul>
           </div>
 
           <div>
@@ -30,7 +42,7 @@ export function Footer() {
               <li><Link href="/certification" className="transition hover:text-[#0f2b5b]">Get Certified</Link></li>
               <li><Link href="/resources" className="transition hover:text-[#0f2b5b]">Resources</Link></li>
               <li><Link href="/news" className="transition hover:text-[#0f2b5b]">News</Link></li>
-              <li><Link href="/donate" className="transition hover:text-[#b8860b] font-medium text-[#b8860b]">Donate</Link></li>
+              <li><Link href="/donate" className="font-medium text-[#b8860b] transition hover:text-[#d4991a]">Donate</Link></li>
             </ul>
           </div>
 

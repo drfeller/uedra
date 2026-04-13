@@ -62,3 +62,108 @@ CREATE TABLE IF NOT EXISTS certified_providers (
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('uedra-certificates', 'uedra-certificates', true)
 ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================
+-- FREE REGISTRY TABLES
+-- ============================================================
+
+-- Core registrant identity
+CREATE TABLE IF NOT EXISTS registrants (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  first_name TEXT NOT NULL,
+  middle_name TEXT,
+  last_name TEXT NOT NULL,
+  date_of_birth DATE NOT NULL,
+  state TEXT NOT NULL,
+  ssn_last4 TEXT NOT NULL,
+  ssn_last4_hint TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  reminder_opt_in BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(first_name, last_name, date_of_birth, state)
+);
+
+-- Registry number sequence counter
+CREATE TABLE IF NOT EXISTS registry_sequences (
+  state TEXT NOT NULL,
+  year INTEGER NOT NULL,
+  last_seq INTEGER DEFAULT 0,
+  PRIMARY KEY (state, year)
+);
+
+-- Atomic sequence increment function
+CREATE OR REPLACE FUNCTION next_registry_seq(p_state TEXT, p_year INTEGER)
+RETURNS INTEGER AS $$
+DECLARE
+  v_seq INTEGER;
+BEGIN
+  INSERT INTO registry_sequences (state, year, last_seq)
+  VALUES (p_state, p_year, 1)
+  ON CONFLICT (state, year)
+  DO UPDATE SET last_seq = registry_sequences.last_seq + 1
+  RETURNING last_seq INTO v_seq;
+  RETURN v_seq;
+END;
+$$ LANGUAGE plpgsql;
+
+-- One row per registered document
+CREATE TABLE IF NOT EXISTS document_registrations (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  registrant_id UUID REFERENCES registrants(id) ON DELETE CASCADE,
+  registry_number TEXT UNIQUE NOT NULL,
+  document_type TEXT NOT NULL CHECK (document_type IN (
+    'will', 'trust', 'financial_poa', 'healthcare_poa',
+    'advance_directive', 'hipaa_authorization'
+  )),
+  storage_location TEXT NOT NULL,
+  storage_location_other TEXT,
+  contact_name TEXT NOT NULL,
+  contact_phone TEXT NOT NULL,
+  contact_email TEXT,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'revoked', 'updated')),
+  verification_tier TEXT DEFAULT 'self_registered' CHECK (
+    verification_tier IN ('self_registered', 'certified_vault')
+  ),
+  certified_provider TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Emergency contact (one per registrant)
+CREATE TABLE IF NOT EXISTS emergency_contacts (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  registrant_id UUID REFERENCES registrants(id) ON DELETE CASCADE UNIQUE,
+  full_name TEXT NOT NULL,
+  relationship TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  email TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Edit tokens for passwordless updates
+CREATE TABLE IF NOT EXISTS edit_tokens (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  registrant_id UUID REFERENCES registrants(id) ON DELETE CASCADE,
+  token TEXT UNIQUE NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  used_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Annual reminder tracking
+CREATE TABLE IF NOT EXISTS reminder_log (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  registrant_id UUID REFERENCES registrants(id) ON DELETE CASCADE,
+  sent_at TIMESTAMPTZ DEFAULT now(),
+  email_message_id TEXT,
+  opened_at TIMESTAMPTZ,
+  clicked_at TIMESTAMPTZ
+);
+
+-- Indexes for verification lookups
+CREATE INDEX IF NOT EXISTS idx_doc_reg_registry_number ON document_registrations(registry_number);
+CREATE INDEX IF NOT EXISTS idx_doc_reg_registrant ON document_registrations(registrant_id);
+CREATE INDEX IF NOT EXISTS idx_registrants_lookup ON registrants(last_name, first_name, date_of_birth, state);
+CREATE INDEX IF NOT EXISTS idx_registrants_email ON registrants(email);

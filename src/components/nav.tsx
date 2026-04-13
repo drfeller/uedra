@@ -4,12 +4,18 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Shield, Menu, X } from 'lucide-react';
 
+const registryLinks = [
+  { href: '/register', label: 'Register (Free)', accent: true },
+  { href: '/verify', label: 'Verify' },
+];
+
 const links = [
   { href: '/about', label: 'About' },
   { href: '/standard', label: 'The Standard' },
   { href: '/certification', label: 'Get Certified' },
   { href: '/for-families', label: 'For Families' },
   { href: '/for-attorneys', label: 'For Attorneys' },
+  { href: '/for-institutions', label: 'For Institutions' },
   { href: '/for-legislators', label: 'For Legislators' },
   { href: '/legislative-tracker', label: 'Tracker' },
   { href: '/resources', label: 'Resources' },
@@ -37,6 +43,20 @@ export function Nav() {
 
         {/* Desktop */}
         <div className="hidden items-center gap-6 text-sm font-medium text-gray-600 lg:flex">
+          {registryLinks.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={
+                l.accent
+                  ? 'font-semibold text-[#b8860b] transition hover:text-[#d4991a]'
+                  : 'transition hover:text-[#0f2b5b]'
+              }
+            >
+              {l.label}
+            </Link>
+          ))}
+          <span className="h-4 w-px bg-gray-300" />
           {links.map((l) => (
             <Link key={l.href} href={l.href} className="transition hover:text-[#0f2b5b]">
               {l.label}
@@ -60,6 +80,22 @@ export function Nav() {
       {open && (
         <div className="border-t border-gray-100 bg-white px-6 pb-6 pt-4 lg:hidden">
           <div className="flex flex-col gap-3 text-sm font-medium text-gray-600">
+            {/* Registry links at top, visually separated */}
+            {registryLinks.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                onClick={() => setOpen(false)}
+                className={
+                  l.accent
+                    ? 'py-1 font-semibold text-[#b8860b] transition hover:text-[#d4991a]'
+                    : 'py-1 transition hover:text-[#0f2b5b]'
+                }
+              >
+                {l.label}
+              </Link>
+            ))}
+            <div className="my-1 border-t border-gray-100" />
             {links.map((l) => (
               <Link
                 key={l.href}
